@@ -4,42 +4,46 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class FanDAO {
-    private static final String SELECT_ALL_FANS = "SELECT id, firstName, lastName, favoriteTeam FROM fans";
 
-    private static final String UPDATE_FAN = "UPDATE fans SET favoriteTeam = ? WHERE id = ?";
+    private static final String UPDATE_FAN = "UPDATE fans SET favoriteteam = ? WHERE id = ?";
 
-    public List<Fan> getAllFans() throws SQLException {
-        List<Fan> fans = new ArrayList<>();
-        Connection connection = DatabaseConnection.getConnection();
+    private static final String GET_FAN = "SELECT * FROM fans WHERE id = ?";
+
+    public Fan getFanData(Integer fanId) throws SQLException {
+        Fan fan;
         try (
-            PreparedStatement statement = connection.prepareStatement(SELECT_ALL_FANS);
-            ResultSet resultSet = statement.executeQuery()
+                Connection connection = DatabaseConnection.getConnection();
+                PreparedStatement statement = connection.prepareStatement(GET_FAN)
         ) {
-            while (resultSet.next()) {
-                Fan fan = new Fan(
+            statement.setInt(1, fanId);
+            ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                fan = new Fan(
                         resultSet.getInt("id"),
-                        resultSet.getString("firstName"),
-                        resultSet.getString("lastName"),
-                        resultSet.getString("favoriteTeam")
+                        resultSet.getString("firstname"),
+                        resultSet.getString("lastname"),
+                        resultSet.getString("favoriteteam")
                 );
-                fans.add(fan);
+                return fan;
             }
+            fan = new Fan(
+                    fanId, "none", "none", "none"
+            );
+            return fan;
         }
-        return fans;
+
     }
 
-    public void updateFan(Fan fan) {
+    public void updateFan(Integer fanId, String newFavTeam) {
 
         try (
             Connection connection = DatabaseConnection.getConnection();
             PreparedStatement statement = connection.prepareStatement(UPDATE_FAN)
         ) {
-            statement.setString(1, fan.getFavoriteTeam());
-            statement.setInt(2, fan.getId());
+            statement.setString(1, newFavTeam);
+            statement.setInt(2, fanId);
             statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();

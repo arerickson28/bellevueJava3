@@ -1,5 +1,6 @@
 package com.example.ericksonmodten;
 
+// the fan class is the Java representation of the SQL fan record
 public class Fan {
     private int id;
     private String firstName;
